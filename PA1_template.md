@@ -90,7 +90,7 @@ print(tot.st.plot)
 
 ![plot of chunk histogram](figure/histogram.png) 
 
-Lastly we can report the summary statistics, to see the mean and median.
+We now report the summary statistics, to see the mean and median.
 
 
 ```r
@@ -120,6 +120,8 @@ summary(tot.steps$total.steps)['Median']
 ##  10800
 ```
 
+
+
 ## What is the average daily activity pattern?
 Compute the data needed for the plot.
 
@@ -127,7 +129,8 @@ Compute the data needed for the plot.
 ```r
 av.steps <- ddply(accel, .(interval),
                   summarize,
-                  average.steps = mean(steps, na.rm=TRUE )
+                  average.steps = mean(steps, na.rm=TRUE
+                                       )
                   )
 head(av.steps)
 ```
@@ -155,8 +158,6 @@ print(av.st.plot)
 
 ![plot of chunk plot](figure/plot.png) 
 
-
-
 Find the maximum.
 
 
@@ -182,6 +183,113 @@ summary(av.steps$average.steps)['Max.']
 
 ## Imputing missing values
 
+First we count the rows that have NAs and the ones that do not.
+
+
+```r
+table( complete.cases(accel) )
+```
+
+```
+## 
+## FALSE  TRUE 
+##  2304 15264
+```
+
+Create a new data frame and impute missing values using interval averages.
+
+
+```r
+imp.accel <- accel
+imp.accel$steps <- ifelse( is.na(imp.accel$steps),
+                     av.steps$average.steps[match(imp.accel$interval, av.steps$interval) ],
+                     imp.accel$steps )
+table( complete.cases(accel) )
+```
+
+```
+## 
+## FALSE  TRUE 
+##  2304 15264
+```
+
+```r
+table( complete.cases(imp.accel) )
+```
+
+```
+## 
+##  TRUE 
+## 17568
+```
+
+
+```r
+tot.imp.steps <- ddply(imp.accel, .(date),
+                  summarize,
+                  total.steps = sum(steps)
+                  )
+head(tot.imp.steps)
+```
+
+```
+##         date total.steps
+## 1 2012-10-01       10766
+## 2 2012-10-02         126
+## 3 2012-10-03       11352
+## 4 2012-10-04       12116
+## 5 2012-10-05       13294
+## 6 2012-10-06       15420
+```
+
+We can now plot the data.
+
+
+```r
+tot.imp.st.plot <- ggplot(tot.imp.steps,
+                      aes(x = total.steps)
+                      )
+tot.imp.st.plot <- tot.imp.st.plot + geom_histogram()
+print(tot.imp.st.plot)
+```
+
+```
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+```
+
+![plot of chunk imputed.histogram](figure/imputed.histogram.png) 
+
+We now report the summary statistics, to see the mean and median.
+
+
+```r
+summary(tot.imp.steps$total.steps)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##      41    9820   10800   10800   12800   21200
+```
+
+```r
+summary(tot.imp.steps$total.steps)['Mean']
+```
+
+```
+##  Mean 
+## 10800
+```
+
+```r
+summary(tot.imp.steps$total.steps)['Median']
+```
+
+```
+## Median 
+##  10800
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+

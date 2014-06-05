@@ -46,7 +46,7 @@ tot.st.plot <- tot.st.plot + geom_histogram()
 print(tot.st.plot)
 ```
 
-Lastly we can report the summary statistics, to see the mean and median.
+We now report the summary statistics, to see the mean and median.
 
 ```{r echo=TRUE, eval=TRUE }
 summary(tot.steps$total.steps)
@@ -62,7 +62,8 @@ Compute the data needed for the plot.
 ```{r echo=TRUE, eval=TRUE }
 av.steps <- ddply(accel, .(interval),
                   summarize,
-                  average.steps = mean(steps, na.rm=TRUE )
+                  average.steps = mean(steps, na.rm=TRUE
+                                       )
                   )
 head(av.steps)
 ```
@@ -91,7 +92,47 @@ summary(av.steps$average.steps)['Max.']
 First we count the rows that have NAs and the ones that do not.
 
 ```{r echo=TRUE, eval=TRUE}
-table(complete.cases(accel))
+table( complete.cases(accel) )
 ```
 
+Create a new data frame and impute missing values using interval averages.
+
+```{r echo=TRUE, eval=TRUE}
+imp.accel <- accel
+imp.accel$steps <- ifelse( is.na(imp.accel$steps),
+                     av.steps$average.steps[match(imp.accel$interval, av.steps$interval) ],
+                     imp.accel$steps )
+table( complete.cases(accel) )
+table( complete.cases(imp.accel) )
+```
+
+```{r echo=TRUE, eval=TRUE }
+tot.imp.steps <- ddply(imp.accel, .(date),
+                  summarize,
+                  total.steps = sum(steps)
+                  )
+head(tot.imp.steps)
+```
+
+We can now plot the data.
+
+```{r imputed.histogram, echo=TRUE, eval=TRUE }
+tot.imp.st.plot <- ggplot(tot.imp.steps,
+                      aes(x = total.steps)
+                      )
+tot.imp.st.plot <- tot.imp.st.plot + geom_histogram()
+print(tot.imp.st.plot)
+```
+
+We now report the summary statistics, to see the mean and median.
+
+```{r echo=TRUE, eval=TRUE }
+summary(tot.imp.steps$total.steps)
+summary(tot.imp.steps$total.steps)['Mean']
+summary(tot.imp.steps$total.steps)['Median']
+```
+
+
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
