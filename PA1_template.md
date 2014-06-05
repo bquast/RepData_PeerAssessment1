@@ -289,7 +289,76 @@ summary(tot.imp.steps$total.steps)['Median']
 ##  10800
 ```
 
+The results of the imputing of data seem to be that the histogram is now a closer approximation of the Gaussian distribution, the mean and median appear to remain unchanged.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+First we create a day of the week variable in the accel data frame, then we create a list of weekdays and weekend days.
 
 
+
+```r
+accel$day <- weekdays(accel$date)
+
+w.day <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
+w.e.day <- c('Saturday', 'Sunday')
+
+accel$weekpart <- ifelse(accel$day %in% w.day, 'weekday', 'weekend')
+head(accel)
+```
+
+```
+##   steps       date interval    day weekpart
+## 1    NA 2012-10-01        0 Monday  weekday
+## 2    NA 2012-10-01        5 Monday  weekday
+## 3    NA 2012-10-01       10 Monday  weekday
+## 4    NA 2012-10-01       15 Monday  weekday
+## 5    NA 2012-10-01       20 Monday  weekday
+## 6    NA 2012-10-01       25 Monday  weekday
+```
+
+```r
+table(accel$weekpart)
+```
+
+```
+## 
+## weekday weekend 
+##   12960    4608
+```
+
+
+Now computer the data for plotting.
+
+
+```r
+av.w.e.steps <- ddply(accel, .(interval, weekpart),
+                  summarize,
+                  average.steps = mean(steps, na.rm=TRUE
+                                       )
+                  )
+head(av.w.e.steps)
+```
+
+```
+##   interval weekpart average.steps
+## 1        0  weekday        2.3333
+## 2        0  weekend        0.0000
+## 3        5  weekday        0.4615
+## 4        5  weekend        0.0000
+## 5       10  weekday        0.1795
+## 6       10  weekend        0.0000
+```
+
+Now plot in two facets using this factor variable.
+
+
+```r
+av.w.e.st.plot <- ggplot(av.w.e.steps,
+                     aes(interval, average.steps)
+                     )
+av.w.e.st.plot <- av.w.e.st.plot + geom_line()
+av.w.e.st.plot <- av.w.e.st.plot + facet_grid(weekpart ~ .)
+print(av.w.e.st.plot)
+```
+
+![plot of chunk facet.plot](figure/facet.plot.png) 

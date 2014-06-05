@@ -132,7 +132,42 @@ summary(tot.imp.steps$total.steps)['Mean']
 summary(tot.imp.steps$total.steps)['Median']
 ```
 
+The results of the imputing of data seem to be that the histogram is now a closer approximation of the Gaussian distribution, the mean and median appear to remain unchanged.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+First we create a day of the week variable in the accel data frame, then we create a list of weekdays and weekend days.
 
 
+```{r echo=TRUE, eval=TRUE}
+accel$day <- weekdays(accel$date)
+
+w.day <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
+w.e.day <- c('Saturday', 'Sunday')
+
+accel$weekpart <- ifelse(accel$day %in% w.day, 'weekday', 'weekend')
+head(accel)
+table(accel$weekpart)
+```
+
+
+Now computer the data for plotting.
+
+```{r echo=TRUE, eval=TRUE }
+av.w.e.steps <- ddply(accel, .(interval, weekpart),
+                  summarize,
+                  average.steps = mean(steps, na.rm=TRUE
+                                       )
+                  )
+head(av.w.e.steps)
+```
+
+Now plot in two facets using this factor variable.
+
+```{r facet.plot, echo=TRUE, eval=TRUE }
+av.w.e.st.plot <- ggplot(av.w.e.steps,
+                     aes(interval, average.steps)
+                     )
+av.w.e.st.plot <- av.w.e.st.plot + geom_line()
+av.w.e.st.plot <- av.w.e.st.plot + facet_grid(weekpart ~ .)
+print(av.w.e.st.plot)
+``` 
